@@ -2,8 +2,12 @@ name: pr-form
 
 # PR 본문이 양식을 채웠는지 검사한다. 저장소 규칙(ruleset)이 이 검사를 병합 필수로 건다.
 # 본문을 고치면(edited) 다시 돈다.
+#
+# pull_request_target 을 쓴다. 이 이벤트는 작업 파일과 코드를 PR 쪽이 아니라 기본 브랜치(main)에서 가져온다.
+# 그래서 PR 이 이 파일이나 검사 스크립트를 고쳐도 그 PR 의 검사에는 main 의 것이 돈다.
+# 🔴 PR 쪽 코드를 받아 실행하지 않는다(ref 를 PR 로 바꾸는 checkout 금지). 본문은 환경 변수로만 넘긴다.
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, edited, synchronize, reopened, ready_for_review]
 
 permissions:
@@ -15,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
       - name: PR 양식 검사
         env:
           PR_BODY: ${{ github.event.pull_request.body }}

@@ -17,6 +17,9 @@ PR 마다 누가 시켰는지, 어떤 모델이 짰는지, 무엇으로 몇 번 
 
 그대로 둔 것: PR 필수, 승인 수 0, 리뷰 스레드 해결 필수, 강제 push 금지(`non_fast_forward`), 우회 없음(`bypass_actors` 비움).
 
+`pr-form` 은 `pull_request_target` 으로 돈다. 작업 파일과 검사 스크립트를 PR 쪽이 아니라 main 에서 가져오므로,
+PR 이 검사기를 고쳐 스스로 통과시킬 수 없다. 대신 PR 쪽 코드를 받아 실행하는 단계를 이 작업에 넣으면 안 된다.
+
 승인 수를 0 으로 둔 까닭: Claude 가 사용자 계정으로 PR 을 열면 그 사용자는 자기 PR 을 승인할 수 없다.
 승인을 1 로 올리면 다른 팀원이 매번 승인해야 병합된다. 팀이 원하면 `required_approving_review_count` 를 1 로 바꾼다.
 
@@ -32,6 +35,7 @@ PR 작성자는 GitHub 가 기록한 값이라 본문에 무엇을 쓰든 바뀌
 
 1. 첫 커밋(이 폴더와 PR 양식)을 main 에 올린다. 규칙이 걸리면 main 에 직접 올릴 수 없다.
 2. 저장소를 공개로 바꾼다. 무료 조직 플랜에서는 공개 저장소만 규칙이 실제로 적용된다.
+   Settings > General > Pull Requests 에서 squash 병합만 켜 둔다. 규칙의 `allowed_merge_methods` 와 맞춘다.
 3. 시험 PR 을 하나 열어 `pr-form` 이 한 번 돌게 한다. 상태 이름이 잡혀야 필수 확인으로 고를 수 있다.
 4. Settings > Rules > Rulesets > New ruleset > Import 로 `main.json` 을 넣는다. 또는
    `gh api repos/Slapdash-Seminar/Slapdash-Seminar/rulesets --method POST --input .github/rulesets/main.json`
