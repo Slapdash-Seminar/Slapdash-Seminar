@@ -1,0 +1,26 @@
+# 비밀값
+.env
+.env.*
+!.env.example
+
+# 파이썬
+__pycache__/
+*.pyc
+
+# Flutter · Dart
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Go
+/bin/
+
+# 편집기 · OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# PR 본문 초안 (CLAUDE.md 순서 5)
+pr-body.md

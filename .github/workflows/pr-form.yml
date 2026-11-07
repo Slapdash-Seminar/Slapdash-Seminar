@@ -1,0 +1,22 @@
+name: pr-form
+
+# PR 본문이 양식을 채웠는지 검사한다. 저장소 규칙(ruleset)이 이 검사를 병합 필수로 건다.
+# 본문을 고치면(edited) 다시 돈다.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  pr-form:
+    name: pr-form
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PR 양식 검사
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: python3 .github/scripts/check_pr_form.py
