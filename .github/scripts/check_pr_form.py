@@ -87,7 +87,7 @@ def check(body, author, allowed=None):
 
     # 사용자
     who = field(sec["사용자"], "요청·승인")
-    m = re.search(r"@([A-Za-z0-9-]+)", who)
+    m = re.search(r"@([A-Za-z0-9-]+(?:\[bot\])?)", who)  # 봇 계정은 이름 끝에 [bot] 이 붙는다
     if not m:
         errs.append("사용자: 요청·승인에 GitHub 계정을 @계정 으로 쓴다")
     elif author and m.group(1).lower() != author.lower():
