@@ -1,0 +1,7 @@
+# 인프라 · 운영
+
+- 다루는 것: 미니PC, Docker Compose, Caddy, Supabase 셀프호스팅, 배포, 백업
+- 담당: 정다우
+- 브랜치 머리: `infra/`
+- 코드: 아직 없음. 첫 코드 PR 이 자리를 정하고 여기에 적는다(`.claude/rules/repo-structure/폴더 구조.md`).
+- 기획·화면 설계: 저장소 밖 운영 폴더. 개발에 필요한 결정은 `결정.md` 로 옮겨 적는다.

@@ -1,3 +1,7 @@
+# 개인 도구 상태 (공유하지 않음)
+.omc/
+.claude/settings.local.json
+
 # 비밀값
 .env
 .env.*
