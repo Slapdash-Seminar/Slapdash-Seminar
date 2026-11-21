@@ -94,6 +94,11 @@ CASES = [
     ("Bash", {"command": "cp /tmp/x ../settings.json"}, R + "/.claude/hooks", True),
     ("Bash", {"command": "rm ../CODEOWNERS"}, R + "/.github/rulesets", True),
     ("Bash", {"command": "echo x | tee ../settings.json"}, R + "/.claude/hooks", True),
+    # 7회차 참고: git 하위 명령과 chmod 의 대상
+    ("Bash", {"command": "git restore -- ../settings.json"}, R + "/.claude/hooks", True),
+    ("Bash", {"command": "git checkout main -- ../CODEOWNERS"}, R + "/.github/rulesets", True),
+    ("Bash", {"command": "chmod 600 ../settings.json"}, R + "/.claude/hooks", True),
+    ("Bash", {"command": "git log -- ../settings.json"}, R + "/.claude/hooks", False),
     # 글자로만 보므로 막히는 정상 명령. Edit 도구로 쓰면 된다(정적 README)
     ("Bash", {"command": "echo 정적 > 가변/note.md"}, REQ, True),
     ("Write", {"file_path": "가변/note.md"}, REQ, False),

@@ -146,8 +146,10 @@ def touches_guard(command, cwd):
 
 
 # 인수 전부가 쓰는 대상인 명령과, 마지막 인수만 쓰는 대상인 명령
-ALL_ARGS = {"rm", "touch", "truncate", "tee", "rmdir", "del", "sed", "perl", "set-content", "add-content",
-            "out-file", "clear-content", "remove-item", "new-item"}
+ALL_ARGS = {"rm", "touch", "truncate", "tee", "rmdir", "del", "sed", "perl", "chmod", "chown", "set-content",
+            "add-content", "out-file", "clear-content", "remove-item", "new-item"}
+# git 의 하위 명령 중 작업 파일을 바꾸는 것. 그 뒤의 인수 전부를 쓰는 대상으로 본다.
+GIT_WRITE = {"rm", "mv", "checkout", "restore", "reset", "apply", "stash", "clean", "cherry-pick", "revert", "switch"}
 LAST_ARG = {"cp", "mv", "install", "ln", "rsync", "copy", "move", "copy-item", "move-item", "rename-item", "ren"}
 
 
@@ -156,7 +158,9 @@ def write_targets(command):
     verb, args = None, []
 
     def flush():
-        if verb in ALL_ARGS:
+        if verb == "git" and args and args[0] in GIT_WRITE:
+            out.extend(a for a in args[1:] if not a.startswith("-"))
+        elif verb in ALL_ARGS:
             out.extend(a for a in args if not a.startswith("-"))
         elif verb in LAST_ARG:
             plain = [a for a in args if not a.startswith("-")]
