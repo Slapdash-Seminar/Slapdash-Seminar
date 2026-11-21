@@ -14,6 +14,7 @@ PR 마다 누가 시켰는지, 어떤 모델이 짰는지, 무엇으로 몇 번 
 | `copilot_code_review` | 뺌 | 이 프로젝트의 검수는 작성 모델과 다른 모델(기본 Codex)이 하고, 그 기록은 PR 본문 검수 절에 남긴다 |
 | 병합 방식 merge, squash, rebase | squash 만 | PR 하나가 main 의 커밋 하나가 된다. 모듈 단위 이력이 그대로 남는다. GitHub 는 squash 커밋에 공동 작성자 줄을 붙인다 |
 | (없음) | `deletion` 추가 | main 브랜치를 지우지 못하게 한다 |
+| (없음) | 필수 상태 확인에 `static-req` 추가 | 정적 요구사항(`docs/요구사항/정적/`)과 그 보호 장치를 바꾼 PR 은 사람이 `정적 요구사항 변경` 라벨을 달아야 병합된다. 바뀐 것이 없으면 늘 통과한다. `.github/workflows/static-req.yml` |
 
 그대로 둔 것: PR 필수, 승인 수 0, 리뷰 스레드 해결 필수, 강제 push 금지(`non_fast_forward`), 우회 없음(`bypass_actors` 비움).
 
@@ -40,3 +41,7 @@ PR 작성자는 GitHub 가 기록한 값이라 본문에 무엇을 쓰든 바뀌
 4. Settings > Rules > Rulesets > New ruleset > Import 로 `main.json` 을 넣는다. 또는
    `gh api repos/Slapdash-Seminar/Slapdash-Seminar/rulesets --method POST --input .github/rulesets/main.json`
 5. 앱·서버 코드가 생기면 `test` 작업과 Go 용 CodeQL 을 필수 확인에 더한다.
+
+`static-req` 를 더한 판(2026-11-21)은 이미 걸린 규칙을 고쳐야 한다. `static-req.yml` 이 main 에 들어가고 PR 하나에서 한 번 돈 뒤에
+Settings > Rules > Rulesets > 모듈 PR 필수 > Require status checks 에 `static-req` 를 더한다. 또는 규칙 ID 를 찾아
+`gh api repos/Slapdash-Seminar/Slapdash-Seminar/rulesets/<ID> --method PUT --input .github/rulesets/main.json` 로 덮어쓴다.

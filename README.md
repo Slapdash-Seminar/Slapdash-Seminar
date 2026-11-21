@@ -28,6 +28,7 @@ main 에는 PR 로만 들어간다. 모듈 하나에 PR 하나다.
 PR 본문은 `.github/pull_request_template.md` 를 채우고, `pr-form` 검사를 통과해야 병합된다.
 작업을 시작하고 끝낼 때는 [작업 공유 절차](.claude/rules/work-sharing/작업%20공유%20절차.md)를 따른다. 지금 하는 일은 Draft PR 로, 끝난 일과 결정은 `.claude/memory/<모듈>/` 에 남긴다.
 PR 순서와 양식은 [PR 규칙](.claude/rules/repo-rules/PR.md), 모듈별 브랜치 이름은 [모듈과 브랜치](.claude/rules/repo-rules/모듈과%20브랜치.md), main 보호 규칙의 근거는 [.github/rulesets/README.md](.github/rulesets/README.md) 에 있다.
+무엇을 만들지는 [요구사항](docs/요구사항/README.md), 코드 쓰는 법은 [코드 공통](.claude/rules/dev-rules/코드%20공통.md) 에 있다. 요구사항 중 `정적/` 은 사람만 고친다.
 상황별로 어느 파일을 볼지는 [CLAUDE.md](CLAUDE.md) 에 모아 두었다.
 
 비밀값(키, 토큰, 비밀번호, `.env`)은 올리지 않는다. 이 저장소는 공개다.

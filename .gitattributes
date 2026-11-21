@@ -1,5 +1,21 @@
 # 저장소에는 LF 로 둔다. 윈도우·맥이 섞인 팀이라 줄바꿈 차이로 diff 가 커지지 않게.
 * text=auto eol=lf
+
+# Windows 전용 스크립트는 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 바이너리
 *.png binary
 *.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
 *.ico binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.jar binary

@@ -40,6 +40,10 @@
           {
             "context": "pr-form",
             "integration_id": 15368
+          },
+          {
+            "context": "static-req",
+            "integration_id": 15368
           }
         ]
       }
