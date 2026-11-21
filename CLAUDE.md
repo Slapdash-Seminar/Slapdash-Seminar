@@ -23,5 +23,6 @@
 | 시험과 검수 | `.claude/rules/dev-rules/시험과 검수.md` |
 | 작업을 공유할 수 없는 상황 | `.claude/rules/work-sharing/공유 못 할 때.md` |
 | memory 를 어떻게 적나 | `.claude/rules/work-sharing/memory 쓰는 법.md` |
-| 기획서·화면 설계 | 저장소 밖 운영 폴더(비공개). 개발에 필요한 결정은 해당 모듈 memory 에, 요구사항은 `docs/요구사항/가변/` 에 옮겨 적는다 |
+| 화면 설계 | Figma. 링크와 바꾸는 법은 `docs/요구사항/가변/화면.md`. 화면은 언제든 바뀐다 |
+| 기획서 | 저장소 밖 운영 폴더(비공개). 개발에 필요한 결정은 해당 모듈 memory 에, 요구사항은 `docs/요구사항/가변/` 에 옮겨 적는다 |
 | 규칙을 새로 만들거나 고친다 | `.claude/rules/README.md` |
