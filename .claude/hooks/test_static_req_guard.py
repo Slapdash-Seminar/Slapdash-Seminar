@@ -66,6 +66,17 @@ CASES = [
     ("Bash", {"command": "echo \"open('docs/요구사항/정적/a.md','w')\" | python -"}, R, True),
     ("Bash", {"command": "python -Bc \"open('.claude/settings.json','w').write('{}')\""}, R, True),
     ("Bash", {"command": "echo '{}' | python - .claude/settings.json"}, R, True),
+    # 4회차: 검색어·파일 이름·데이터 파이프·낱말은 막지 않는다
+    ("Bash", {"command": "rg -n 'python' docs/요구사항/정적/README.md"}, R, False),
+    ("Bash", {"command": "grep -n sh docs/요구사항/정적/README.md scripts/check.sh"}, R, False),
+    ("Bash", {"command": "cat .claude/settings.json | python -B -m json.tool"}, R, False),
+    ("Bash", {"command": "echo settings.json >> docs/요구사항/가변/README.md"}, R, False),
+    ("Bash", {"command": "echo codeowners >> docs/요구사항/가변/README.md"}, R, False),
+    ("Bash", {"command": "cat docs/요구사항/정적/README.md | sh"}, R, True),
+    ("Bash", {"command": "ls docs/요구사항/정적 && /usr/bin/python3 x.py"}, R, True),
+    ("Bash", {"command": "cd .claude && echo '{}' > settings.json"}, R, True),
+    ("Bash", {"command": "echo '{}' > settings.json"}, R + "/.claude", True),
+    ("Bash", {"command": "cat .claude/settings.json | python -"}, R, True),
     # 글자로만 보므로 막히는 정상 명령. Edit 도구로 쓰면 된다(정적 README)
     ("Bash", {"command": "echo 정적 > 가변/note.md"}, REQ, True),
     ("Write", {"file_path": "가변/note.md"}, REQ, False),

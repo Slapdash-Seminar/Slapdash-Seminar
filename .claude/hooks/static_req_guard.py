@@ -36,18 +36,21 @@ WRITE_HINT = re.compile(
     r"|\b(Set-Content|Add-Content|Out-File|Clear-Content|Remove-Item|Move-Item|Copy-Item|New-Item|Rename-Item)\b",
     re.IGNORECASE,
 )
-# 인터프리터. 정적 경로가 나오는 명령에서는 옵션 모양과 상관없이 막는다(-Bc, --eval, 표준 입력 코드 등).
-INTERPRETER = re.compile(
-    r"\b(python3?|py|node|deno|bun|ruby|perl|php|pwsh|powershell|bash|sh|zsh|cmd)\b",
-    re.IGNORECASE,
-)
+# 명령이 시작되는 자리. 줄 처음, 파이프·세미콜론·&&·||·$( 뒤, xargs·env 등 뒤.
+# 검색어(`rg 'python'`)나 파일 이름(`check.sh`)에 든 낱말은 인터프리터 호출로 보지 않는다.
+CMD_START = r"(?:^|[|;&`(\n]\s*|\b(?:xargs|exec|env|sudo|time|nohup)\s+)"
+INTERP_NAMES = r"(?:python3?|py|node|deno|bun|ruby|perl|php|pwsh|powershell|bash|sh|zsh|cmd)"
+# 정적 경로가 나오는 명령에서는 인터프리터를 부르면 옵션 모양과 상관없이 막는다(-Bc, --eval, 표준 입력 코드 등).
+INTERPRETER = re.compile(CMD_START + r"(?:\S*/)?" + INTERP_NAMES + r"(?:\.exe)?\b", re.IGNORECASE)
 # 보호 장치 이름만 나오는 명령에서는 코드를 명령줄이나 표준 입력으로 넘길 때만 막는다.
 # 훅 시험처럼 스크립트 파일을 돌리는 것은 통과시킨다.
 INLINE_CODE = re.compile(
     r"\b(python3?|py|node|deno|bun|ruby|perl|php)\b[^|;&]*\s(-[A-Za-z]*[ce][A-Za-z]*\b|--eval\b|--command\b|-(\s|$))"
     r"|\b(pwsh|powershell|bash|sh|zsh|cmd)\b[^|;&]*\s(-[A-Za-z]*c[A-Za-z]*\b|-command\b|-encodedcommand\b|/c\b)"
     r"|<<"
-    r"|\|\s*(python3?|py|node|deno|bun|ruby|perl|php|pwsh|powershell|bash|sh|zsh)\b",
+    # 파이프로 받은 것을 코드로 돌리는 경우. `| python -m json.tool` 이나 `| python 스크립트.py` 는 데이터라 뺀다.
+    r"|\|\s*(python3?|py|node|deno|bun|ruby|perl|php|pwsh|powershell|bash|sh|zsh)\b"
+    r"(?!(?:\s+-[A-Za-z]+)*\s+(?:-m\b|[\w./\\-]+\.(?:py|js|mjs|ts|rb|pl|php|sh|ps1)\b))",
     re.IGNORECASE,
 )
 # PR 승인은 사람이 한다. 에이전트가 승인하면 2인 동의가 무너진다.
@@ -117,9 +120,18 @@ def touches_static(command, cwd):
     return False
 
 
-def touches_guard(command):
-    names = [low(g.rsplit("/", 1)[-1]) for g in GUARDS] + [".claude/settings", "codeowners"]
-    return any(n in low(command) for n in names)
+def touches_guard(command, cwd):
+    # 보호 장치는 전체 경로로 비교한다. 가변 문서에 `settings.json` 이라는 낱말을 쓰는 것은 막지 않는다.
+    # 그 폴더 안에서는(`cd .claude` 뒤 등) 파일 이름만으로도 가리킬 수 있으니 이름도 본다.
+    command, cwd = low(command), low(cwd).rstrip("/")
+    for g in GUARDS:
+        g = low(g)
+        folder, name = g.rsplit("/", 1)
+        if g in command:
+            return True
+        if (cwd.endswith("/" + folder) or "cd " + folder in command) and name in command:
+            return True
+    return False
 
 
 def main():
@@ -147,7 +159,7 @@ def main():
         if APPROVE.search(command):
             deny(f"PR 승인은 사람이 직접 한다. 정적 요구사항은 두 사람의 동의가 있어야 바뀐다({why}).")
         static = touches_static(command, cwd)
-        guard = touches_guard(command)
+        guard = touches_guard(command, cwd)
         if (static and (WRITE_HINT.search(command) or INTERPRETER.search(command))) or \
                 (guard and (WRITE_HINT.search(command) or INLINE_CODE.search(command))):
             deny(f"이 명령은 정적 요구사항이나 그 보호 장치를 바꿀 수 있어 막았다. 읽기만 하려면 Read 도구나 "
