@@ -47,6 +47,19 @@ CASES = [
     ("Bash", {"command": "echo x >> .github/CODEOWNERS"}, R, True),
     ("Bash", {"command": "echo '{\"disableAllHooks\": true}' > x.json"}, R, True),
     ("Bash", {"command": "echo hi > docs/요구사항/가변/a.md"}, R, False),
+    # 대소문자 (Windows·macOS 는 같은 파일)
+    ("Write", {"file_path": R + "/DOCS/요구사항/정적/a.md"}, R, True),
+    ("Edit", {"file_path": R + "/.CLAUDE/Settings.json"}, R, True),
+    ("Edit", {"file_path": R + "/.github/codeowners"}, R, True),
+    ("Bash", {"command": "echo x > DOCS/요구사항/정적/a.md"}, R, True),
+    # 오탐이면 안 되는 것
+    ("Bash", {"command": "python .claude/hooks/test_static_req_guard.py"}, R, False),
+    ("Bash", {"command": "python -B .claude/hooks/test_static_req_guard.py"}, R, False),
+    ("Bash", {"command": "echo '정적 요구사항과 맞춘다' >> 가변/기능/team.md"}, REQ, False),
+    ("Bash", {"command": "echo '정적 요구사항과 맞춘다' >> docs/요구사항/가변/README.md"}, R, False),
+    # 명령줄 코드로 쓰기
+    ("Bash", {"command": "python -c \"open('docs/요구사항/정적/a.md','w').write('x')\""}, R, True),
+    ("Bash", {"command": "rm -r 정적"}, REQ, True),
     # 승인 대신하기
     ("Bash", {"command": "gh pr review 3 --approve"}, R, True),
     ("Bash", {"command": "gh pr review 3 -a -b ok"}, R, True),

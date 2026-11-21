@@ -12,6 +12,7 @@
 import json
 import posixpath
 import re
+import shlex
 import sys
 import unicodedata
 
@@ -32,7 +33,9 @@ WRITE_HINT = re.compile(
     r"|\b(tee|mv|cp|rm|rmdir|touch|mkdir|ln|truncate|dd|chmod|install|rsync|del|ren|move|copy)\b"
     r"|\b(sed|perl)\b[^|;&]*\s-i"
     r"|\bgit\s+(rm|mv|checkout|restore|reset|apply|am|stash|clean|cherry-pick|revert|switch)\b"
-    r"|\b(python3?|py|node|ruby|pwsh|powershell)\b"
+    # 인터프리터는 코드를 명령줄에 바로 넣을 때만 본다. 스크립트 파일을 돌리는 것(시험 등)은 통과시킨다.
+    r"|\b(python3?|py|node|ruby)\b[^|;&]*\s-[ce]\b"
+    r"|\b(pwsh|powershell)\b[^|;&]*\s-(c|command|encodedcommand)\b"
     r"|\b(Set-Content|Add-Content|Out-File|Clear-Content|Remove-Item|Move-Item|Copy-Item|New-Item|Rename-Item)\b",
     re.IGNORECASE,
 )
@@ -50,6 +53,11 @@ def norm(text):
     return unicodedata.normalize("NFC", text or "").replace("\\", "/")
 
 
+def low(text):
+    # Windows·macOS 는 경로의 대소문자를 가리지 않는다. 비교는 소문자로 한다.
+    return text.lower()
+
+
 def resolve(path, cwd):
     # 상대 경로는 cwd 에 붙이고 `..` 를 푼다.
     if path and not ABSOLUTE.match(path) and cwd:
@@ -58,10 +66,10 @@ def resolve(path, cwd):
 
 
 def is_protected(path):
-    p = "/" + path.lstrip("/")
+    p = "/" + low(path).lstrip("/")
     if "/" + STATIC + "/" in p + "/":
         return True
-    return any(p.endswith("/" + g) for g in GUARDS)
+    return any(p.endswith("/" + low(g)) for g in GUARDS)
 
 
 def deny(reason):
@@ -76,12 +84,25 @@ def deny(reason):
     sys.exit(0)
 
 
+def tokens(command):
+    # 따옴표로 묶은 글은 한 덩어리로 본다. 가변 문서에 "정적 요구사항" 이라는 글을 쓰는 것은 경로가 아니다.
+    try:
+        return shlex.split(command, posix=True)
+    except ValueError:
+        return command.split()
+
+
 def shell_touches(command, cwd):
+    command, cwd = low(command), low(cwd)
     if STATIC in command or STATIC in cwd:
         return True
-    if "정적" in command and ("요구사항" in command or "docs/요구사항" in cwd):
-        return True
-    names = [g.rsplit("/", 1)[-1] for g in GUARDS] + [".claude/settings", "CODEOWNERS"]
+    # docs/요구사항 안에서, 또는 그리로 cd 한 뒤 `정적/...` 처럼 상대 경로로 가리키는 경우
+    if "docs/요구사항" in cwd or "요구사항" in command:
+        for t in tokens(command):
+            t = t.rstrip("/")
+            if t == "정적" or t.startswith("정적/") or t.endswith("/정적") or "/정적/" in t:
+                return True
+    names = [low(g.rsplit("/", 1)[-1]) for g in GUARDS] + [".claude/settings", "codeowners"]
     return any(n in command for n in names)
 
 
@@ -105,7 +126,7 @@ def main():
 
     if tool in SHELL_TOOLS:
         command = norm(args.get("command", ""))
-        if "disableAllHooks" in command:
+        if "disableallhooks" in low(command):
             deny("훅을 끄는 설정은 에이전트가 만들지 않는다.")
         if APPROVE.search(command):
             deny(f"PR 승인은 사람이 직접 한다. 정적 요구사항은 두 사람의 동의가 있어야 바뀐다({why}).")
