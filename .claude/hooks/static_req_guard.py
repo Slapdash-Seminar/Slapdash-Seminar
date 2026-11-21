@@ -33,10 +33,21 @@ WRITE_HINT = re.compile(
     r"|\b(tee|mv|cp|rm|rmdir|touch|mkdir|ln|truncate|dd|chmod|install|rsync|del|ren|move|copy)\b"
     r"|\b(sed|perl)\b[^|;&]*\s-i"
     r"|\bgit\s+(rm|mv|checkout|restore|reset|apply|am|stash|clean|cherry-pick|revert|switch)\b"
-    # 인터프리터는 코드를 명령줄에 바로 넣을 때만 본다. 스크립트 파일을 돌리는 것(시험 등)은 통과시킨다.
-    r"|\b(python3?|py|node|ruby)\b[^|;&]*\s-[ce]\b"
-    r"|\b(pwsh|powershell)\b[^|;&]*\s-(c|command|encodedcommand)\b"
     r"|\b(Set-Content|Add-Content|Out-File|Clear-Content|Remove-Item|Move-Item|Copy-Item|New-Item|Rename-Item)\b",
+    re.IGNORECASE,
+)
+# 인터프리터. 정적 경로가 나오는 명령에서는 옵션 모양과 상관없이 막는다(-Bc, --eval, 표준 입력 코드 등).
+INTERPRETER = re.compile(
+    r"\b(python3?|py|node|deno|bun|ruby|perl|php|pwsh|powershell|bash|sh|zsh|cmd)\b",
+    re.IGNORECASE,
+)
+# 보호 장치 이름만 나오는 명령에서는 코드를 명령줄이나 표준 입력으로 넘길 때만 막는다.
+# 훅 시험처럼 스크립트 파일을 돌리는 것은 통과시킨다.
+INLINE_CODE = re.compile(
+    r"\b(python3?|py|node|deno|bun|ruby|perl|php)\b[^|;&]*\s(-[A-Za-z]*[ce][A-Za-z]*\b|--eval\b|--command\b|-(\s|$))"
+    r"|\b(pwsh|powershell|bash|sh|zsh|cmd)\b[^|;&]*\s(-[A-Za-z]*c[A-Za-z]*\b|-command\b|-encodedcommand\b|/c\b)"
+    r"|<<"
+    r"|\|\s*(python3?|py|node|deno|bun|ruby|perl|php|pwsh|powershell|bash|sh|zsh)\b",
     re.IGNORECASE,
 )
 # PR 승인은 사람이 한다. 에이전트가 승인하면 2인 동의가 무너진다.
@@ -92,18 +103,23 @@ def tokens(command):
         return command.split()
 
 
-def shell_touches(command, cwd):
+def touches_static(command, cwd):
     command, cwd = low(command), low(cwd)
     if STATIC in command or STATIC in cwd:
         return True
-    # docs/요구사항 안에서, 또는 그리로 cd 한 뒤 `정적/...` 처럼 상대 경로로 가리키는 경우
+    # docs/요구사항 안에서, 또는 그리로 cd 한 뒤 `정적/...` 처럼 상대 경로로 가리키는 경우.
+    # 글자로만 보므로 `echo 정적 > 가변/a.md` 처럼 낱말을 쓰는 명령도 막힌다. 그때는 Edit 도구를 쓴다.
     if "docs/요구사항" in cwd or "요구사항" in command:
         for t in tokens(command):
             t = t.rstrip("/")
             if t == "정적" or t.startswith("정적/") or t.endswith("/정적") or "/정적/" in t:
                 return True
+    return False
+
+
+def touches_guard(command):
     names = [low(g.rsplit("/", 1)[-1]) for g in GUARDS] + [".claude/settings", "codeowners"]
-    return any(n in command for n in names)
+    return any(n in low(command) for n in names)
 
 
 def main():
@@ -130,7 +146,10 @@ def main():
             deny("훅을 끄는 설정은 에이전트가 만들지 않는다.")
         if APPROVE.search(command):
             deny(f"PR 승인은 사람이 직접 한다. 정적 요구사항은 두 사람의 동의가 있어야 바뀐다({why}).")
-        if shell_touches(command, cwd) and WRITE_HINT.search(command):
+        static = touches_static(command, cwd)
+        guard = touches_guard(command)
+        if (static and (WRITE_HINT.search(command) or INTERPRETER.search(command))) or \
+                (guard and (WRITE_HINT.search(command) or INLINE_CODE.search(command))):
             deny(f"이 명령은 정적 요구사항이나 그 보호 장치를 바꿀 수 있어 막았다. 읽기만 하려면 Read 도구나 "
                  f"cat·grep 처럼 쓰지 않는 명령을 쓴다({why}).")
 

@@ -60,6 +60,15 @@ CASES = [
     # 명령줄 코드로 쓰기
     ("Bash", {"command": "python -c \"open('docs/요구사항/정적/a.md','w').write('x')\""}, R, True),
     ("Bash", {"command": "rm -r 정적"}, REQ, True),
+    ("Bash", {"command": "python -Bc \"open('docs/요구사항/정적/a.md','w').write('x')\""}, R, True),
+    ("Bash", {"command": "node --eval \"require('fs').writeFileSync('docs/요구사항/정적/a.md','x')\""}, R, True),
+    ("Bash", {"command": "python - <<'PY'\nopen('docs/요구사항/정적/a.md','w').write('x')\nPY"}, R, True),
+    ("Bash", {"command": "echo \"open('docs/요구사항/정적/a.md','w')\" | python -"}, R, True),
+    ("Bash", {"command": "python -Bc \"open('.claude/settings.json','w').write('{}')\""}, R, True),
+    ("Bash", {"command": "echo '{}' | python - .claude/settings.json"}, R, True),
+    # 글자로만 보므로 막히는 정상 명령. Edit 도구로 쓰면 된다(정적 README)
+    ("Bash", {"command": "echo 정적 > 가변/note.md"}, REQ, True),
+    ("Write", {"file_path": "가변/note.md"}, REQ, False),
     # 승인 대신하기
     ("Bash", {"command": "gh pr review 3 --approve"}, R, True),
     ("Bash", {"command": "gh pr review 3 -a -b ok"}, R, True),
