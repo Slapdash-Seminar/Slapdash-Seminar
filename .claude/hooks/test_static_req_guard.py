@@ -77,6 +77,16 @@ CASES = [
     ("Bash", {"command": "cd .claude && echo '{}' > settings.json"}, R, True),
     ("Bash", {"command": "echo '{}' > settings.json"}, R + "/.claude", True),
     ("Bash", {"command": "cat .claude/settings.json | python -"}, R, True),
+    # 5회차: 접두어·앞 공백, 상위 폴더 상대 경로
+    ("Bash", {"command": "  python -Bc \"open('docs/요구사항/정적/a.md','w').write('x')\""}, R, True),
+    ("Bash", {"command": "env FOO=1 python -Bc \"open('docs/요구사항/정적/a.md','w')\""}, R, True),
+    ("Bash", {"command": "sudo -u me python -Bc \"open('docs/요구사항/정적/a.md','w')\""}, R, True),
+    ("Bash", {"command": "FOO=1 node -e \"x\" docs/요구사항/정적/a.md"}, R, True),
+    ("Bash", {"command": "echo '{}' > ../settings.json"}, R + "/.claude/hooks", True),
+    ("Bash", {"command": "echo x >> ../CODEOWNERS"}, R + "/.github/rulesets", True),
+    ("Bash", {"command": "echo x > ./static_req_guard.py"}, R + "/.claude/hooks", True),
+    ("Bash", {"command": "cat ../settings.json"}, R + "/.claude/hooks", False),
+    ("Bash", {"command": "echo hi > notes.md"}, R + "/.claude/hooks", False),
     # 글자로만 보므로 막히는 정상 명령. Edit 도구로 쓰면 된다(정적 README)
     ("Bash", {"command": "echo 정적 > 가변/note.md"}, REQ, True),
     ("Write", {"file_path": "가변/note.md"}, REQ, False),

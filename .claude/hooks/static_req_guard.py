@@ -38,7 +38,12 @@ WRITE_HINT = re.compile(
 )
 # 명령이 시작되는 자리. 줄 처음, 파이프·세미콜론·&&·||·$( 뒤, xargs·env 등 뒤.
 # 검색어(`rg 'python'`)나 파일 이름(`check.sh`)에 든 낱말은 인터프리터 호출로 보지 않는다.
-CMD_START = r"(?:^|[|;&`(\n]\s*|\b(?:xargs|exec|env|sudo|time|nohup)\s+)"
+# 앞의 공백, `FOO=1` 같은 환경 변수 할당, `env -i`·`sudo -u me` 같은 접두어와 그 옵션도 건너뛴다.
+CMD_START = (
+    r"(?:^|[|;&`(\n])\s*"
+    r"(?:\w+=\S*\s+)*"
+    r"(?:(?:xargs|exec|env|sudo|time|nohup|command)\b(?:\s+(?:-\S+(?:\s+(?!-)[^\s|;&]+)?|\w+=\S*))*\s+)*"
+)
 INTERP_NAMES = r"(?:python3?|py|node|deno|bun|ruby|perl|php|pwsh|powershell|bash|sh|zsh|cmd)"
 # 정적 경로가 나오는 명령에서는 인터프리터를 부르면 옵션 모양과 상관없이 막는다(-Bc, --eval, 표준 입력 코드 등).
 INTERPRETER = re.compile(CMD_START + r"(?:\S*/)?" + INTERP_NAMES + r"(?:\.exe)?\b", re.IGNORECASE)
@@ -124,12 +129,20 @@ def touches_guard(command, cwd):
     # 보호 장치는 전체 경로로 비교한다. 가변 문서에 `settings.json` 이라는 낱말을 쓰는 것은 막지 않는다.
     # 그 폴더 안에서는(`cd .claude` 뒤 등) 파일 이름만으로도 가리킬 수 있으니 이름도 본다.
     command, cwd = low(command), low(cwd).rstrip("/")
-    for g in GUARDS:
-        g = low(g)
+    guards = [low(g) for g in GUARDS]
+    for g in guards:
         folder, name = g.rsplit("/", 1)
         if g in command:
             return True
-        if (cwd.endswith("/" + folder) or "cd " + folder in command) and name in command:
+        if "cd " + folder in command and name in command:
+            return True
+    # 명령 속 경로를 cwd 기준으로 풀어 비교한다(`../settings.json`, `./CODEOWNERS` 등).
+    for t in tokens(command):
+        t = t.lstrip("<>&|0123456789")
+        if not t:
+            continue
+        p = "/" + resolve(t, cwd).lstrip("/")
+        if any(p.endswith("/" + g) for g in guards):
             return True
     return False
 
