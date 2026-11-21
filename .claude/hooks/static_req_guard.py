@@ -1,19 +1,28 @@
-"""정적 요구사항(docs/요구사항/정적/)을 Claude Code 가 고치지 못하게 막는 PreToolUse 훅.
+"""정적 요구사항(docs/요구사항/정적/)과 그 보호 장치를 Claude Code 가 고치지 못하게 막는 PreToolUse 훅.
 
 .claude/settings.json 의 permissions.deny 와 함께 쓴다. deny 는 파일 수정 도구만 막으므로
-셸 명령으로 쓰는 길과 `정적 요구사항 변경` 라벨을 다는 길을 이 훅이 막는다.
-여기서 못 잡는 길(스크립트가 경로를 조립해 쓰는 경우 등)은 CI(static-req)가 PR 에서 잡는다.
+상대 경로로 쓰는 길, 셸 명령으로 쓰는 길, 보호 장치를 끄는 길, PR 승인을 대신하는 길을 이 훅이 막는다.
+
+한계: 셸 명령은 글자로만 본다. 변수나 스크립트가 경로를 조립해 쓰면 못 잡는다.
+그래서 마지막 관문은 GitHub 의 2인 승인(.github/CODEOWNERS, 코드 오너 승인)이다.
 
 막을 때는 종료 코드 0 과 함께 deny 결정을 JSON 으로 내보낸다. 입력을 못 읽으면 막지 않는다.
 """
 
 import json
+import posixpath
 import re
 import sys
 import unicodedata
 
-PROTECTED = "docs/요구사항/정적"
-LABEL = "정적 요구사항 변경"
+STATIC = "docs/요구사항/정적"
+# 보호 장치. 이것을 고치면 정적 보호가 꺼진다.
+GUARDS = (
+    ".claude/settings.json",
+    ".claude/settings.local.json",
+    ".claude/hooks/static_req_guard.py",
+    ".github/CODEOWNERS",
+)
 FILE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 SHELL_TOOLS = {"Bash", "PowerShell"}
 
@@ -27,6 +36,13 @@ WRITE_HINT = re.compile(
     r"|\b(Set-Content|Add-Content|Out-File|Clear-Content|Remove-Item|Move-Item|Copy-Item|New-Item|Rename-Item)\b",
     re.IGNORECASE,
 )
+# PR 승인은 사람이 한다. 에이전트가 승인하면 2인 동의가 무너진다.
+APPROVE = re.compile(
+    r"\bgh\s+pr\s+review\b[^|;&]*(--approve|\s-a\b)"
+    r"|\breviews\b[^|;&]*\bAPPROVE\b",
+    re.IGNORECASE,
+)
+ABSOLUTE = re.compile(r"^(/|[A-Za-z]:/)")
 
 
 def norm(text):
@@ -34,47 +50,68 @@ def norm(text):
     return unicodedata.normalize("NFC", text or "").replace("\\", "/")
 
 
+def resolve(path, cwd):
+    # 상대 경로는 cwd 에 붙이고 `..` 를 푼다.
+    if path and not ABSOLUTE.match(path) and cwd:
+        path = cwd.rstrip("/") + "/" + path
+    return posixpath.normpath(path) if path else ""
+
+
+def is_protected(path):
+    p = "/" + path.lstrip("/")
+    if "/" + STATIC + "/" in p + "/":
+        return True
+    return any(p.endswith("/" + g) for g in GUARDS)
+
+
 def deny(reason):
+    # Windows 콘솔 인코딩(cp949)에 흔들리지 않게 ASCII 로 내보낸다. JSON 이 \u 를 풀어 준다.
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
             "permissionDecisionReason": reason,
         }
-    }, ensure_ascii=False))
+    }))
     sys.exit(0)
 
 
-def touches_protected(command, cwd):
-    if PROTECTED in command or PROTECTED in cwd:
+def shell_touches(command, cwd):
+    if STATIC in command or STATIC in cwd:
         return True
-    # docs/요구사항 안에서 `정적/...` 처럼 상대 경로로 가리키는 경우
-    return "docs/요구사항" in cwd and "정적" in command
+    if "정적" in command and ("요구사항" in command or "docs/요구사항" in cwd):
+        return True
+    names = [g.rsplit("/", 1)[-1] for g in GUARDS] + [".claude/settings", "CODEOWNERS"]
+    return any(n in command for n in names)
 
 
 def main():
     try:
-        data = json.load(sys.stdin)
+        # Windows 는 표준 입력을 cp949 로 읽어 한글 경로를 깨뜨린다. 바이트로 받아 UTF-8 로 푼다.
+        data = json.loads(sys.stdin.buffer.read().decode("utf-8"))
     except Exception:
         return
     tool = data.get("tool_name", "")
     args = data.get("tool_input") or {}
     cwd = norm(data.get("cwd", ""))
+    why = f"{STATIC}/README.md"
 
     if tool in FILE_TOOLS:
-        path = norm(args.get("file_path") or args.get("notebook_path") or "")
-        if PROTECTED + "/" in path or path.endswith(PROTECTED):
-            deny(f"{PROTECTED}/ 는 정적 요구사항이라 에이전트가 고치지 않는다. "
-                 f"바꿔야 하면 멈추고 사람에게 묻는다({PROTECTED}/README.md).")
+        path = resolve(norm(args.get("file_path") or args.get("notebook_path") or ""), cwd)
+        if is_protected(path):
+            deny(f"{path} 는 정적 요구사항이나 그 보호 장치라 에이전트가 고치지 않는다. "
+                 f"바꿔야 하면 멈추고 사람에게 묻는다({why}).")
         return
 
     if tool in SHELL_TOOLS:
         command = norm(args.get("command", ""))
-        if LABEL in command:
-            deny(f"`{LABEL}` 라벨은 사람이 단다. 에이전트는 이 라벨을 달거나 만들지 않는다.")
-        if touches_protected(command, cwd) and WRITE_HINT.search(command):
-            deny(f"이 명령은 {PROTECTED}/ 를 바꿀 수 있어 막았다. 읽기만 하려면 Read 도구나 "
-                 f"cat·grep 처럼 쓰지 않는 명령을 쓴다({PROTECTED}/README.md).")
+        if "disableAllHooks" in command:
+            deny("훅을 끄는 설정은 에이전트가 만들지 않는다.")
+        if APPROVE.search(command):
+            deny(f"PR 승인은 사람이 직접 한다. 정적 요구사항은 두 사람의 동의가 있어야 바뀐다({why}).")
+        if shell_touches(command, cwd) and WRITE_HINT.search(command):
+            deny(f"이 명령은 정적 요구사항이나 그 보호 장치를 바꿀 수 있어 막았다. 읽기만 하려면 Read 도구나 "
+                 f"cat·grep 처럼 쓰지 않는 명령을 쓴다({why}).")
 
 
 if __name__ == "__main__":

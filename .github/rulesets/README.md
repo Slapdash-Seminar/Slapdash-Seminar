@@ -14,9 +14,10 @@ PR 마다 누가 시켰는지, 어떤 모델이 짰는지, 무엇으로 몇 번 
 | `copilot_code_review` | 뺌 | 이 프로젝트의 검수는 작성 모델과 다른 모델(기본 Codex)이 하고, 그 기록은 PR 본문 검수 절에 남긴다 |
 | 병합 방식 merge, squash, rebase | squash 만 | PR 하나가 main 의 커밋 하나가 된다. 모듈 단위 이력이 그대로 남는다. GitHub 는 squash 커밋에 공동 작성자 줄을 붙인다 |
 | (없음) | `deletion` 추가 | main 브랜치를 지우지 못하게 한다 |
-| (없음) | 필수 상태 확인에 `static-req` 추가 | 정적 요구사항(`docs/요구사항/정적/`)과 그 보호 장치를 바꾼 PR 은 사람이 `정적 요구사항 변경` 라벨을 달아야 병합된다. 바뀐 것이 없으면 늘 통과한다. `.github/workflows/static-req.yml` |
+| `require_code_owner_review` false | true | `.github/CODEOWNERS` 에 적힌 파일(정적 요구사항과 그 보호 장치)을 바꾼 PR 은 코드 오너 한 명이 승인해야 병합된다. PR 을 연 계정은 자기 PR 을 승인할 수 없으므로 최소 두 사람이 동의하게 된다. 다른 파일만 바꾼 PR 은 승인 수 0 그대로다 |
+| `dismiss_stale_reviews_on_push` false | true | 승인 뒤에 새 커밋을 올리면 승인이 풀린다. 승인받은 내용과 병합되는 내용이 같게 한다 |
 
-그대로 둔 것: PR 필수, 승인 수 0, 리뷰 스레드 해결 필수, 강제 push 금지(`non_fast_forward`), 우회 없음(`bypass_actors` 비움).
+그대로 둔 것: PR 필수, 승인 수 0(코드 오너 파일 말고는), 리뷰 스레드 해결 필수, 강제 push 금지(`non_fast_forward`), 우회 없음(`bypass_actors` 비움).
 
 `pr-form` 은 `pull_request_target` 으로 돈다. 작업 파일과 검사 스크립트를 PR 쪽이 아니라 main 에서 가져오므로,
 PR 이 검사기를 고쳐 스스로 통과시킬 수 없다. 대신 PR 쪽 코드를 받아 실행하는 단계를 이 작업에 넣으면 안 된다.
@@ -42,6 +43,11 @@ PR 작성자는 GitHub 가 기록한 값이라 본문에 무엇을 쓰든 바뀌
    `gh api repos/Slapdash-Seminar/Slapdash-Seminar/rulesets --method POST --input .github/rulesets/main.json`
 5. 앱·서버 코드가 생기면 `test` 작업과 Go 용 CodeQL 을 필수 확인에 더한다.
 
-`static-req` 를 더한 판(2026-11-21)은 이미 걸린 규칙을 고쳐야 한다. `static-req.yml` 이 main 에 들어가고 PR 하나에서 한 번 돈 뒤에
-Settings > Rules > Rulesets > 모듈 PR 필수 > Require status checks 에 `static-req` 를 더한다. 또는 규칙 ID 를 찾아
-`gh api repos/Slapdash-Seminar/Slapdash-Seminar/rulesets/<ID> --method PUT --input .github/rulesets/main.json` 로 덮어쓴다.
+## 코드 오너 승인을 켤 때 (2026-11-21 판)
+
+이미 걸린 규칙을 고쳐야 한다. 이 파일만 바꿔서는 GitHub 에 아무 일도 일어나지 않는다.
+
+1. `.github/CODEOWNERS` 가 main 에 들어간 뒤 형식 오류가 없는지 본다. `gh api repos/Slapdash-Seminar/Slapdash-Seminar/codeowners/errors` 결과가 `"errors":[]` 여야 한다.
+2. 규칙을 덮어쓴다. Settings > Rules > Rulesets > 모듈 PR 필수 > Require a pull request 에서 "Require review from Code Owners" 와 "Dismiss stale pull request approvals" 를 켠다. 또는
+   `gh api repos/Slapdash-Seminar/Slapdash-Seminar/rulesets/26756219 --method PUT --input .github/rulesets/main.json`
+3. 시험 PR 로 실제로 막히는지 본다. `docs/요구사항/정적/` 의 파일 한 줄을 바꾼 Draft PR 을 열고 Ready 로 바꾼다. 병합 버튼이 "Review required" 로 막히면 된다. 승인 수 0 과 함께 써도 코드 오너 승인이 강제되는지 GitHub 문서에 분명하지 않아서 이 시험으로 확인한다. 막히지 않으면 승인 수를 1 로 올릴지 팀이 정한다. 시험 PR 은 병합하지 않고 닫는다.

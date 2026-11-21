@@ -29,7 +29,9 @@ linter:
 app/lib/
   main.dart
   common/        여러 모듈이 같이 쓰는 위젯, 테마, 화면 이동, Supabase 연결
+    models/      여러 모듈이 같이 쓰는 모델(회원, 팀 등)
   <모듈>/        member, team, schedule, notice, file, admin, alert
+    <모듈>.dart  이 모듈이 밖에 내놓는 것만 export 하는 파일
     screens/     화면 하나에 파일 하나. 이름 끝은 _screen.dart
     widgets/     그 모듈 안에서만 쓰는 위젯
     data/        Supabase·서버 호출과 모델
@@ -37,8 +39,8 @@ app/lib/
 app/test/<모듈>/ 시험. 이름 끝은 _test.dart
 ```
 
-- 다른 모듈의 `screens/`, `widgets/`, `state/` 를 직접 가져다 쓰지 않는다. 같이 써야 하면 `common/` 으로 옮기는 PR 을 `skeleton` 으로 연다.
-- 다른 모듈의 `data/` 는 가져다 써도 된다.
+- 다른 모듈은 그 모듈의 `<모듈>.dart` 로만 가져다 쓴다. 안쪽 폴더(`screens/`, `widgets/`, `data/`, `state/`)를 직접 import 하지 않는다.
+- `<모듈>.dart` 에 무엇을 내놓을지는 그 모듈 담당이 정한다. 여러 모듈이 같은 모델을 쓰게 되면 `common/models/` 로 옮기는 PR 을 `skeleton` 으로 연다.
 
 ## 쓰는 법
 
