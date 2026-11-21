@@ -159,7 +159,9 @@ def write_targets(command):
 
     def flush():
         if verb == "git" and args and args[0] in GIT_WRITE:
-            out.extend(a for a in args[1:] if not a.startswith("-"))
+            # -n·--dry-run 은 바꾸지 않고 결과만 보여 준다(git clean -n, git rm -n)
+            if not any(a in ("-n", "--dry-run") for a in args[1:]):
+                out.extend(a for a in args[1:] if not a.startswith("-"))
         elif verb in ALL_ARGS:
             out.extend(a for a in args if not a.startswith("-"))
         elif verb in LAST_ARG:
