@@ -16,9 +16,13 @@
 | 브랜치 이름, 모듈과 담당 | `.claude/rules/repo-rules/모듈과 브랜치.md` |
 | PR 여는 순서, 본문 양식, `pr-form` 실패 | `.claude/rules/repo-rules/PR.md`, 스킬 `module-pr` |
 | main 보호 규칙의 근거 | `.github/rulesets/README.md` |
-| 기술 스택, 코드 쓰는 법 | `.claude/rules/dev-rules/` |
+| 기술 스택 | `.claude/rules/dev-rules/기술 스택.md` |
+| 코드를 쓴다 (매번) | `.claude/rules/dev-rules/코드 공통.md` 와 그 언어 파일(`Flutter.md`, `Go.md`, `Supabase.md`) |
+| 무엇을 만들어야 하나, 요구사항 | `docs/요구사항/README.md`. `정적/` 은 읽기만 한다. 고치려 하지 말고 사람에게 묻는다 |
+| 요구사항을 더하거나 고친다 | `docs/요구사항/가변/README.md` |
 | 시험과 검수 | `.claude/rules/dev-rules/시험과 검수.md` |
 | 작업을 공유할 수 없는 상황 | `.claude/rules/work-sharing/공유 못 할 때.md` |
 | memory 를 어떻게 적나 | `.claude/rules/work-sharing/memory 쓰는 법.md` |
-| 기획서·요구사항서·화면 설계 | 저장소 밖 운영 폴더(비공개). 개발에 필요한 결정은 해당 모듈 memory 에 옮겨 적는다 |
+| 화면 설계 | Figma. 링크와 바꾸는 법은 `docs/요구사항/가변/화면.md`. 화면은 언제든 바뀐다 |
+| 기획서 | 저장소 밖 운영 폴더(비공개). 개발에 필요한 결정은 해당 모듈 memory 에, 요구사항은 `docs/요구사항/가변/` 에 옮겨 적는다 |
 | 규칙을 새로 만들거나 고친다 | `.claude/rules/README.md` |

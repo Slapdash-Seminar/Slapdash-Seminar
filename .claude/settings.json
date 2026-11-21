@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(/docs/요구사항/정적/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/static_req_guard.py\" 2>/dev/null || python \"${CLAUDE_PROJECT_DIR}/.claude/hooks/static_req_guard.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
