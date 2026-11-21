@@ -136,15 +136,48 @@ def touches_guard(command, cwd):
             return True
         if "cd " + folder in command and name in command:
             return True
-    # 명령 속 경로를 cwd 기준으로 풀어 비교한다(`../settings.json`, `./CODEOWNERS` 등).
-    for t in tokens(command):
-        t = t.lstrip("<>&|0123456789")
-        if not t:
-            continue
+    # 쓰는 대상 경로만 cwd 기준으로 풀어 비교한다(`> ../settings.json`, `rm ./CODEOWNERS` 등).
+    # 보호 파일을 읽어 다른 곳에 쓰거나, 경로를 글로 적는 것은 막지 않는다.
+    for t in write_targets(command):
         p = "/" + resolve(t, cwd).lstrip("/")
         if any(p.endswith("/" + g) for g in guards):
             return True
     return False
+
+
+# 인수 전부가 쓰는 대상인 명령과, 마지막 인수만 쓰는 대상인 명령
+ALL_ARGS = {"rm", "touch", "truncate", "tee", "rmdir", "del", "sed", "perl", "set-content", "add-content",
+            "out-file", "clear-content", "remove-item", "new-item"}
+LAST_ARG = {"cp", "mv", "install", "ln", "rsync", "copy", "move", "copy-item", "move-item", "rename-item", "ren"}
+
+
+def write_targets(command):
+    out, toks = [], tokens(command)
+    verb, args = None, []
+
+    def flush():
+        if verb in ALL_ARGS:
+            out.extend(a for a in args if not a.startswith("-"))
+        elif verb in LAST_ARG:
+            plain = [a for a in args if not a.startswith("-")]
+            out.extend(plain[-1:])
+
+    i = 0
+    while i < len(toks):
+        t = toks[i]
+        if t in ("|", ";", "&&", "||", "&"):
+            flush(); verb, args = None, []
+        elif t in (">", ">>", "1>", "2>", ">|") and i + 1 < len(toks):
+            out.append(toks[i + 1]); i += 1
+        elif t.startswith(">") and len(t) > 1:
+            out.append(t.lstrip(">|"))
+        elif verb is None:
+            verb = t.rsplit("/", 1)[-1]
+        else:
+            args.append(t)
+        i += 1
+    flush()
+    return [t for t in out if t]
 
 
 def main():

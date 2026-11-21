@@ -87,6 +87,13 @@ CASES = [
     ("Bash", {"command": "echo x > ./static_req_guard.py"}, R + "/.claude/hooks", True),
     ("Bash", {"command": "cat ../settings.json"}, R + "/.claude/hooks", False),
     ("Bash", {"command": "echo hi > notes.md"}, R + "/.claude/hooks", False),
+    # 6회차: 보호 파일을 읽어 다른 곳에 쓰거나 경로를 글로 적는 것은 통과
+    ("Bash", {"command": "cat ../settings.json > /tmp/settings-copy.json"}, R + "/.claude/hooks", False),
+    ("Bash", {"command": "echo '../settings.json' > notes.md"}, R + "/.claude/hooks", False),
+    ("Bash", {"command": "cat ../CODEOWNERS > /tmp/codeowners-copy"}, R + "/.github/rulesets", False),
+    ("Bash", {"command": "cp /tmp/x ../settings.json"}, R + "/.claude/hooks", True),
+    ("Bash", {"command": "rm ../CODEOWNERS"}, R + "/.github/rulesets", True),
+    ("Bash", {"command": "echo x | tee ../settings.json"}, R + "/.claude/hooks", True),
     # 글자로만 보므로 막히는 정상 명령. Edit 도구로 쓰면 된다(정적 README)
     ("Bash", {"command": "echo 정적 > 가변/note.md"}, REQ, True),
     ("Write", {"file_path": "가변/note.md"}, REQ, False),
