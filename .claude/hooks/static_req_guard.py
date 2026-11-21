@@ -159,8 +159,10 @@ def write_targets(command):
 
     def flush():
         if verb == "git" and args and args[0] in GIT_WRITE:
-            # -n·--dry-run 은 바꾸지 않고 결과만 보여 준다(git clean -n, git rm -n)
-            if not any(a in ("-n", "--dry-run") for a in args[1:]):
+            # -n·--dry-run 은 바꾸지 않고 결과만 보여 준다(git clean -n, git rm -n).
+            # `--` 뒤는 파일 이름이라 옵션으로 보지 않는다(git rm -- -n x).
+            opts = args[1:args.index("--")] if "--" in args else args[1:]
+            if not any(a in ("-n", "--dry-run") for a in opts):
                 out.extend(a for a in args[1:] if not a.startswith("-"))
         elif verb in ALL_ARGS:
             out.extend(a for a in args if not a.startswith("-"))

@@ -104,6 +104,9 @@ CASES = [
     ("Bash", {"command": "git clean --dry-run -- ../settings.json"}, R + "/.claude/hooks", False),
     ("Bash", {"command": "git rm -n -- ../settings.json"}, R + "/.claude/hooks", False),
     ("Bash", {"command": "git rm -- ../settings.json"}, R + "/.claude/hooks", True),
+    # 9회차: `--` 뒤의 -n 은 파일 이름이다
+    ("Bash", {"command": "git rm -- -n ../settings.json"}, R + "/.claude/hooks", True),
+    ("Bash", {"command": "git checkout main -- -n ../CODEOWNERS"}, R + "/.github/rulesets", True),
     # 글자로만 보므로 막히는 정상 명령. Edit 도구로 쓰면 된다(정적 README)
     ("Bash", {"command": "echo 정적 > 가변/note.md"}, REQ, True),
     ("Write", {"file_path": "가변/note.md"}, REQ, False),
