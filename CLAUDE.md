@@ -1,44 +1,24 @@
 # CLAUDE.md
 
-Slapdash-Seminar(대충하는발표회 모임 관리 앱) 코드 저장소다. Flutter 앱(스마트폰·PC·웹 한 코드),
-Supabase 셀프호스팅, Go 보조 서버로 만든다. 기획·설계 문서는 이 저장소가 아니라 운영 폴더에 있다.
+대충하는발표회 모임 관리 앱 코드 저장소다. 이 파일은 안내만 한다. 규칙과 기록은 `.claude/` 에 있고, 그때그때 필요한 파일만 연다.
 
-## PR 규칙 (반드시 지킬 것)
+## 상황별로 볼 곳
 
-main 에는 PR 로만 들어간다. 규칙(`.github/rulesets/main.json`)이 직접 push 를 막고, `pr-form` 검사가 통과해야 병합된다.
-목적은 코드마다 누가 시켰고, 어떤 모델이 짰고, 무엇으로 검수했는지 남겨 책임과 신뢰도를 확인하고 다시 보기 쉽게 하는 것이다.
-
-### 모듈 하나 = 브랜치 하나 = PR 하나
-
-| 모듈 | 브랜치 머리 | 담당 |
-|---|---|---|
-| 골격 · 공통 레이아웃 | `skeleton/` | 김도원 |
-| 회원 (가입, 로그인, 설정) | `member/` | 김도원 |
-| 팀 (팀 고르기, 팀 설정, 초대 코드) | `team/` | 정다우 |
-| 일정 (요청, 가능 시간, 후보 산출, 순위 투표, 확정, 겹침) | `schedule/` | 김도원 |
-| 공지 (템플릿, 작성, 디스코드 발송) | `notice/` | 신강민 |
-| 파일 (지정 폴더, 업로드, 자료실) | `file/` | 신강민 |
-| 관리자 (서비스 관리자 화면) | `admin/` | 정다우 |
-| 알림 | `alert/` | 정한 뒤 적는다 |
-| 인프라 · 운영 | `infra/` | 정다우 |
-
-- 브랜치 이름은 `<브랜치 머리><짧은 영문 요약>` 이다. 예: `schedule/vote-api`
-- 한 PR 에 두 모듈이 섞이면 나눈다. 모두가 쓰는 공통 부분만 골격으로 올린다.
-
-### 순서
-
-1. main 에서 브랜치를 딴다. main 에서 직접 커밋하지 않는다.
-2. 짠다. 커밋 메시지 끝에 공동 작성자 줄을 붙인다. 예: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`
-3. 시험을 돌린다. 명령과 결과를 적어 둔다.
-4. **작성 모델과 다른 모델로 검수한다.** 기본은 Codex 다. 지적을 고치고 다시 검수한 횟수를 센다. 재설계 판정이면 PR 을 열지 않는다.
-5. `.github/pull_request_template.md` 를 그대로 채워 `pr-body.md` 로 저장하고, 로컬에서 먼저 검사한다.
-   `python .github/scripts/check_pr_form.py --file pr-body.md --author <PR 을 여는 GitHub 계정>`
-6. `gh pr create --base main --head <브랜치> --title "<모듈>: <요약>" --body-file pr-body.md`
-7. `pr-form` 이 실패하면 본문을 고친다(`gh pr edit --body-file`). 본문을 고치면 검사가 다시 돈다.
-
-### PR 본문에서 틀리기 쉬운 곳
-
-- 사용자의 `요청·승인` 은 PR 을 여는 GitHub 계정이다. 검사가 PR 작성자와 대조한다. 다른 사람이 시켰으면 그 사람 계정으로 연다.
-- 작성 모델은 정확한 모델 ID 로 쓴다(예: `claude-opus-5-5`). 검수 모델이 같으면 검사에서 떨어진다.
-- 모듈은 정확히 하나만 체크한다. 범위는 여러 개여도 된다.
-- 비밀값(키, 토큰, 비밀번호, `.env`)은 커밋하지 않는다. 이 저장소는 공개다.
+| 상황 | 볼 곳 |
+|---|---|
+| 작업을 시작하거나 멈추거나 끝낸다 (매번) | 스킬 `work-share`, `.claude/rules/work-sharing/작업 공유 절차.md` |
+| main 에 넣는다 | 스킬 `module-pr`, `.claude/rules/repo-rules/PR.md` |
+| 키·토큰·비밀번호·`.env` 가 섞일 수 있다 | `.claude/rules/repo-rules/비밀값.md` |
+| 처음 왔다, 무엇부터 | `.claude/rules/work-sharing/작업 공유 절차.md` |
+| 지금 누가 무엇을 하나 | `.claude/rules/work-sharing/작업 공유 절차.md` 의 "시작할 때" 2번 (Draft PR, PR 없는 브랜치, `[작업 공유]` 이슈, `.claude/memory/_공유 대기/`) |
+| 기능의 결정·진행·인수인계 | `.claude/memory/<모듈>/` (모듈 폴더 이름은 브랜치 머리와 같다) |
+| 폴더가 어디 있나, 새 폴더를 어디 두나 | `.claude/rules/repo-structure/폴더 구조.md` |
+| 브랜치 이름, 모듈과 담당 | `.claude/rules/repo-rules/모듈과 브랜치.md` |
+| PR 여는 순서, 본문 양식, `pr-form` 실패 | `.claude/rules/repo-rules/PR.md`, 스킬 `module-pr` |
+| main 보호 규칙의 근거 | `.github/rulesets/README.md` |
+| 기술 스택, 코드 쓰는 법 | `.claude/rules/dev-rules/` |
+| 시험과 검수 | `.claude/rules/dev-rules/시험과 검수.md` |
+| 작업을 공유할 수 없는 상황 | `.claude/rules/work-sharing/공유 못 할 때.md` |
+| memory 를 어떻게 적나 | `.claude/rules/work-sharing/memory 쓰는 법.md` |
+| 기획서·요구사항서·화면 설계 | 저장소 밖 운영 폴더(비공개). 개발에 필요한 결정은 해당 모듈 memory 에 옮겨 적는다 |
+| 규칙을 새로 만들거나 고친다 | `.claude/rules/README.md` |

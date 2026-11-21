@@ -1,3 +1,7 @@
+# 개인 도구 상태 (공유하지 않음)
+.omc/
+.claude/settings.local.json
+
 # 비밀값
 .env
 .env.*
@@ -22,5 +26,5 @@ build/
 .DS_Store
 Thumbs.db
 
-# PR 본문 초안 (CLAUDE.md 순서 5)
+# PR 본문 초안 (.claude/rules/repo-rules/PR.md 순서 6)
 pr-body.md
