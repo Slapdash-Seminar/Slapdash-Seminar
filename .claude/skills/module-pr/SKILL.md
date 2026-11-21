@@ -19,6 +19,7 @@ description: 이 저장소에 모듈 단위 PR 을 연다. 브랜치 이름, 시
    - 모듈은 하나만, 범위는 여러 개
    - 마지막 확인 칸은 사실일 때만 체크
 5. 로컬 검사: `python .github/scripts/check_pr_form.py --file pr-body.md --author <계정>`. 통과할 때까지 고친다.
+   이 PR 이 `.github/pull_request_template.md` 나 `check_pr_form.py` 를 바꾸면 4·5번 모두 main 의 양식과 검사기로 한다(`PR.md` 6번). `pr-form` 이 main 의 것을 쓰기 때문이다.
 6. Draft 가 있으면 `gh pr edit <번호> --body-file pr-body.md` 다음 `gh pr ready <번호>`. 없으면
    `gh pr create --base main --head <브랜치> --title "<모듈>: <요약>" --body-file pr-body.md`.
 7. `gh pr checks <번호>` 로 `pr-form` 결과를 본다.
@@ -29,4 +30,4 @@ description: 이 저장소에 모듈 단위 PR 을 연다. 브랜치 이름, 시
 ## 이력
 
 - 2026-11-18 만듦. 옛 루트 `CLAUDE.md` 의 "PR 규칙" 절을 규칙 파일과 이 스킬로 나눔.
-- 2026-11-21 고침(PR #2 Codex 검수 1회차). `work-share` 와 서로 부르던 끝 줄 단계를 하나로.
+- 2026-11-21 고침(PR #2 Codex 검수 1·2회차). `work-share` 와 서로 부르던 끝 줄 단계를 하나로. 양식·검사기를 바꾸는 PR 은 main 의 것으로 검사.

@@ -13,6 +13,8 @@ Claude 는 스킬 `module-pr` 로 이 순서를 밟는다.
 5. 작성 모델과 다른 모델로 검수한다(`.claude/rules/dev-rules/시험과 검수.md`). 2번의 Draft PR 은 공유용이라 검수 전에 연다. 재설계 판정이면 Draft 를 Ready 로 바꾸지 않고 병합하지 않는다. 방향이 통째로 바뀌면 그 Draft 를 닫고 새로 연다.
 6. `.github/pull_request_template.md` 를 그대로 채워 `pr-body.md` 로 저장하고 로컬에서 먼저 검사한다.
    `python .github/scripts/check_pr_form.py --file pr-body.md --author <PR 을 여는 GitHub 계정>`
+   이 PR 이 양식이나 검사기를 바꾼다면 브랜치의 것이 아니라 main 의 것으로 채우고 검사한다(아래 마지막 줄). 예:
+   `git worktree add ../main-check origin/main` 뒤 `../main-check/.github/pull_request_template.md` 를 복사해 채우고 `python ../main-check/.github/scripts/check_pr_form.py --file pr-body.md --author <계정>`.
 7. 본문을 넣고 Draft 를 푼다. `gh pr edit <번호> --body-file pr-body.md` 다음 `gh pr ready <번호>`.
    Draft 없이 바로 열 때는 `gh pr create --base main --head <브랜치> --title "<모듈>: <요약>" --body-file pr-body.md`.
 8. `pr-form` 이 실패하면 본문을 고친다. 본문을 고치면 검사가 다시 돈다.
