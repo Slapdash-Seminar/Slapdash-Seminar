@@ -10,7 +10,7 @@ Claude 는 스킬 `module-pr` 로 이 순서를 밟는다.
 2. 처음 push 할 때 Draft PR 을 연다. 팀원이 "누가 무엇을 하는지" 를 여기서 본다(`.claude/rules/work-sharing/작업 공유 절차.md`).
 3. 짠다. 커밋 메시지 끝에 공동 작성자 줄을 붙인다. 예: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`
 4. 시험을 돌린다. 명령과 결과를 적어 둔다.
-5. 작성 모델과 다른 모델로 검수한다(`.claude/rules/dev-rules/시험과 검수.md`). 재설계 판정이면 병합하지 않는다.
+5. 작성 모델과 다른 모델로 검수한다(`.claude/rules/dev-rules/시험과 검수.md`). 2번의 Draft PR 은 공유용이라 검수 전에 연다. 재설계 판정이면 Draft 를 Ready 로 바꾸지 않고 병합하지 않는다. 방향이 통째로 바뀌면 그 Draft 를 닫고 새로 연다.
 6. `.github/pull_request_template.md` 를 그대로 채워 `pr-body.md` 로 저장하고 로컬에서 먼저 검사한다.
    `python .github/scripts/check_pr_form.py --file pr-body.md --author <PR 을 여는 GitHub 계정>`
 7. 본문을 넣고 Draft 를 푼다. `gh pr edit <번호> --body-file pr-body.md` 다음 `gh pr ready <번호>`.
