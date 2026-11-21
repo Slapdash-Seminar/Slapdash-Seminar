@@ -23,8 +23,10 @@ description: 이 저장소에 모듈 단위 PR 을 연다. 브랜치 이름, 시
    `gh pr create --base main --head <브랜치> --title "<모듈>: <요약>" --body-file pr-body.md`.
 7. `gh pr checks <번호>` 로 `pr-form` 결과를 본다.
 8. 병합은 사람이 한다. Claude 는 병합하지 않는다.
-9. 끝나면 `work-share` 의 "끝" 을 밟는다(`진행.md` 끝 줄).
+
+`진행.md` 의 끝 줄은 `work-share` 의 "끝" 이 이 스킬보다 먼저 쓰고 push 한다. 이 스킬은 끝 줄을 쓰지 않는다. 아직 없으면 4번 전에 `work-share` "끝" 1번을 먼저 한다.
 
 ## 이력
 
 - 2026-11-18 만듦. 옛 루트 `CLAUDE.md` 의 "PR 규칙" 절을 규칙 파일과 이 스킬로 나눔.
+- 2026-11-21 고침(PR #2 Codex 검수 1회차). `work-share` 와 서로 부르던 끝 줄 단계를 하나로.

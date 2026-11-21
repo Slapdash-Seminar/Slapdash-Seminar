@@ -3,4 +3,5 @@
 Draft PR 이나 memory 로 바로 공유하지 못한 작업을 적는 곳이다. 양식과 쓰는 때는 `.claude/rules/work-sharing/공유 못 할 때.md`.
 
 - 파일 이름: `YYYY-MM-DD_<GitHub 계정>_<모듈>_<요약>.md`
-- 정식 memory 로 옮기면 다음 PR 에서 지운다.
+- push 를 못 하는 동안 이 폴더의 파일은 쓴 사람의 PC 에만 있다. push 가 되면 먼저 올린다.
+- 쓴 사람이 그 모듈의 다음 PR 에서 정식 memory 로 옮기고 지운다. 7일 넘은 파일을 보면 쓴 사람에게 묻는다.

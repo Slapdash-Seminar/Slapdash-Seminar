@@ -2,18 +2,15 @@
 
 대충하는발표회 모임 관리 앱 코드 저장소다. 이 파일은 안내만 한다. 규칙과 기록은 `.claude/` 에 있고, 그때그때 필요한 파일만 연다.
 
-## 언제나
-
-- 작업을 시작할 때와 끝낼 때 작업 공유 절차를 따른다. 스킬 `work-share`, 규칙 `.claude/rules/work-sharing/`.
-- main 에는 PR 로만 들어간다. 모듈 하나 = 브랜치 하나 = PR 하나. 스킬 `module-pr`.
-- 비밀값(키, 토큰, 비밀번호, `.env`)은 커밋하지 않는다. 이 저장소는 공개다.
-
 ## 상황별로 볼 곳
 
 | 상황 | 볼 곳 |
 |---|---|
+| 작업을 시작하거나 멈추거나 끝낸다 (매번) | 스킬 `work-share`, `.claude/rules/work-sharing/작업 공유 절차.md` |
+| main 에 넣는다 | 스킬 `module-pr`, `.claude/rules/repo-rules/PR.md` |
+| 키·토큰·비밀번호·`.env` 가 섞일 수 있다 | `.claude/rules/repo-rules/비밀값.md` |
 | 처음 왔다, 무엇부터 | `.claude/rules/work-sharing/작업 공유 절차.md` |
-| 지금 누가 무엇을 하나 | `gh pr list --state open` (작업 중은 Draft PR), `.claude/memory/_공유 대기/` |
+| 지금 누가 무엇을 하나 | `.claude/rules/work-sharing/작업 공유 절차.md` 의 "시작할 때" 2번 (Draft PR, PR 없는 브랜치, `[작업 공유]` 이슈, `.claude/memory/_공유 대기/`) |
 | 기능의 결정·진행·인수인계 | `.claude/memory/<모듈>/` (모듈 폴더 이름은 브랜치 머리와 같다) |
 | 폴더가 어디 있나, 새 폴더를 어디 두나 | `.claude/rules/repo-structure/폴더 구조.md` |
 | 브랜치 이름, 모듈과 담당 | `.claude/rules/repo-rules/모듈과 브랜치.md` |

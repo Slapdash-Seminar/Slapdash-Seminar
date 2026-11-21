@@ -10,15 +10,17 @@ description: 이 저장소에서 작업을 시작하거나 끝낼 때, 세션을
 ## 시작
 
 ```bash
-git switch main && git pull --ff-only
-gh pr list --state open                      # 같은 모듈에 열린 PR 이 있나
-ls ".claude/memory/_공유 대기/"               # 공유 못 한 기록이 있나
+git switch main && git pull --ff-only && git fetch --prune
+gh pr list --state open --search "<모듈>: in:title"           # 같은 모듈의 열린 PR
+git branch -r --list "origin/<모듈>/*"                        # PR 없이 올라온 브랜치
+gh issue list --state open --search "[작업 공유] in:title"    # 저장소 밖에서 남긴 공유
+ls ".claude/memory/_공유 대기/"                                # 공유 못 한 기록
 ```
 
 1. 맡은 모듈을 정한다(`.claude/rules/repo-rules/모듈과 브랜치.md`). 둘에 걸치면 사용자에게 나눌지 묻는다.
 2. `.claude/memory/<모듈>/진행.md` 맨 위 다섯 줄, `결정.md`, 관련 `_공유 대기/` 파일을 읽고 사용자에게 두세 줄로 알린다.
-3. 같은 모듈에 남의 열린 PR 이 있으면 손대기 전에 사용자에게 말한다.
-4. 브랜치를 딴다. `git switch -c <모듈>/<요약>`
+3. 같은 모듈에 남이 하는 일(PR, 브랜치, 이슈)이 있으면 시작하지 않는다. 사용자에게 알리고, 그 PR 이나 이슈에 댓글로 범위 나누기나 이어 받기를 정한다(`작업 공유 절차.md` "시작할 때" 3번).
+4. 브랜치를 딴다. `git switch -c <모듈>/<요약>`. 이어 받기면 그 브랜치를 받고 `진행.md` 에 인수인계 줄.
 5. `진행.md` 맨 위에 시작 줄을 쓴다(`memory 쓰는 법.md` 의 꼴). 커밋, push, Draft PR.
 
 ```bash
@@ -37,10 +39,20 @@ gh pr create --draft --base main --title "<모듈>: <요약>" --body "작업 중
 2. `진행.md` 맨 위에 지금 상태 한 줄(무엇까지 했나, 다음에 할 첫 일).
 3. 커밋하고 push. 실패하면 아래 "공유 못 할 때".
 
+## 다시 시작 (세션이 예고 없이 끊긴 뒤)
+
+```bash
+git status
+git log --oneline @{u}..HEAD                 # push 안 된 커밋
+gh pr list --author @me --state open
+```
+
+`진행.md` 맨 위 줄과 대조해 빠진 것을 커밋·push 하고, `진행.md` 에 "이어 받음" 줄을 쓴다. 내가 쓴 `_공유 대기/` 파일이 있으면 올린다.
+
 ## 끝
 
-1. `진행.md` 에 끝 줄. 남은 일을 같이 쓴다.
-2. 스킬 `module-pr` 로 시험·검수·본문을 마치고 Draft 를 푼다.
+1. `진행.md` 에 끝 줄. 남은 일을 같이 쓴다. 커밋하고 push 한다. 끝 줄은 여기서만 쓴다.
+2. 스킬 `module-pr` 로 시험·검수·본문을 마치고 Draft 를 푼다. `module-pr` 은 끝 줄을 다시 쓰지 않는다.
 
 ## 공유 못 할 때
 
@@ -57,3 +69,4 @@ push 를 못 하면 로컬에 커밋하고 `.claude/memory/_공유 대기/YYYY-M
 ## 이력
 
 - 2026-11-18 만듦. 레포 구조 개편(`.claude/` 의 rules·memory·skills)과 함께.
+- 2026-11-21 고침(PR #2 Codex 검수 1회차). 시작 때 PR 없는 브랜치와 `[작업 공유]` 이슈도 보기, 같은 모듈 동시 작업이면 멈추고 정하기, 끊긴 뒤 다시 시작, 끝 줄은 한 번만.
